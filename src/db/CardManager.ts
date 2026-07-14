@@ -11,7 +11,11 @@ export const CardManager = {
     return db.cards.get(id);
   },
 
-  async create(projectId: string, name: string, canvasSize: { width: number; height: number }): Promise<Card> {
+  async create(
+    projectId: string,
+    name: string,
+    canvasSize: { width: number; height: number }
+  ): Promise<Card> {
     const now = Date.now();
     const card: Card = {
       id: generateId(),
@@ -46,7 +50,10 @@ export const CardManager = {
     return card;
   },
 
-  async update(id: string, updates: Partial<Omit<Card, 'id' | 'projectId' | 'createdAt'>>): Promise<void> {
+  async update(
+    id: string,
+    updates: Partial<Omit<Card, 'id' | 'projectId' | 'createdAt'>>
+  ): Promise<void> {
     await db.cards.update(id, { ...updates, updatedAt: Date.now() });
   },
 

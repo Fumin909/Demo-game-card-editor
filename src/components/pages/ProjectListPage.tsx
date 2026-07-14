@@ -35,7 +35,9 @@ export function ProjectListPage() {
       <div className="max-w-4xl mx-auto px-8 py-12">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-text mb-2">🎴 卡牌编辑器</h1>
-          <p className="text-text-secondary">Game Card Editor V2.0 - 创建、编辑和导出你的专属卡牌</p>
+          <p className="text-text-secondary">
+            Game Card Editor V2.0 - 创建、编辑和导出你的专属卡牌
+          </p>
         </div>
 
         <div className="flex items-center justify-between mb-6">
@@ -49,7 +51,9 @@ export function ProjectListPage() {
         {projects.length === 0 ? (
           <div className="bg-white rounded-lg border border-border p-12 text-center">
             <div className="text-5xl mb-4">📁</div>
-            <p className="text-text-secondary mb-4">暂无项目，点击"新建项目"开始你的第一个卡牌项目</p>
+            <p className="text-text-secondary mb-4">
+              暂无项目，点击"新建项目"开始你的第一个卡牌项目
+            </p>
             <button className="btn-primary mx-auto" onClick={() => setShowNewDialog(true)}>
               <Plus size={16} />
               创建第一个项目
@@ -85,7 +89,11 @@ export function ProjectListPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(`确定删除项目"${project.name}"吗？该项目下所有卡牌和素材都将被删除。`)) {
+                      if (
+                        confirm(
+                          `确定删除项目"${project.name}"吗？该项目下所有卡牌和素材都将被删除。`
+                        )
+                      ) {
                         deleteProject(project.id);
                       }
                     }}

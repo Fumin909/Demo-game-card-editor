@@ -29,7 +29,9 @@ export function RightPanel() {
 function ObjectListPanel({
   layers,
 }: {
-  layers: (NonNullable<ReturnType<typeof useWorkspaceStore.getState>['currentCard']>['layers'][number])[];
+  layers: NonNullable<
+    ReturnType<typeof useWorkspaceStore.getState>['currentCard']
+  >['layers'][number][];
 }) {
   return (
     <div className="h-[40%] flex flex-col">
@@ -48,17 +50,19 @@ function ObjectListPanel({
                 'border-b border-gray-50'
               )}
             >
-              <button
-                className="btn-icon !p-0.5"
-                title={layer.visible ? '隐藏' : '显示'}
-              >
-                {layer.visible ? <Eye size={14} /> : <EyeOff size={14} className="text-text-secondary" />}
+              <button className="btn-icon !p-0.5" title={layer.visible ? '隐藏' : '显示'}>
+                {layer.visible ? (
+                  <Eye size={14} />
+                ) : (
+                  <EyeOff size={14} className="text-text-secondary" />
+                )}
               </button>
-              <button
-                className="btn-icon !p-0.5"
-                title={layer.locked ? '解锁' : '锁定'}
-              >
-                {layer.locked ? <Lock size={14} /> : <Unlock size={14} className="text-text-secondary" />}
+              <button className="btn-icon !p-0.5" title={layer.locked ? '解锁' : '锁定'}>
+                {layer.locked ? (
+                  <Lock size={14} />
+                ) : (
+                  <Unlock size={14} className="text-text-secondary" />
+                )}
               </button>
               <span className="text-text-secondary">
                 {layer.type === 'image' ? <ImageIcon size={14} /> : <Type size={14} />}
@@ -67,7 +71,10 @@ function ObjectListPanel({
               <button className="btn-icon !p-0.5 opacity-0 group-hover:opacity-100" title="复制">
                 <Copy size={14} />
               </button>
-              <button className="btn-icon !p-0.5 opacity-0 group-hover:opacity-100 hover:text-red-500" title="删除">
+              <button
+                className="btn-icon !p-0.5 opacity-0 group-hover:opacity-100 hover:text-red-500"
+                title="删除"
+              >
                 <Trash2 size={14} />
               </button>
             </div>
@@ -115,9 +122,7 @@ function PropertyPanel() {
           </div>
         </div>
         <div className="border-t border-border pt-3 mt-3">
-          <p className="text-xs text-text-secondary">
-            选中对象后，这里将显示对象的详细属性
-          </p>
+          <p className="text-xs text-text-secondary">选中对象后，这里将显示对象的详细属性</p>
         </div>
       </div>
     </div>

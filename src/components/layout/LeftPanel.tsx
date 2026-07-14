@@ -126,7 +126,11 @@ function AssetsTab() {
         <div className="grid grid-cols-2 gap-2">
           {currentProject?.assets.map((a) => (
             <div key={a.id} className="border border-border rounded-md p-1">
-              <img src={a.thumbnailDataUrl} alt={a.name} className="w-full aspect-square object-cover rounded-sm" />
+              <img
+                src={a.thumbnailDataUrl}
+                alt={a.name}
+                className="w-full aspect-square object-cover rounded-sm"
+              />
               <div className="text-xs text-text truncate mt-1 px-1">{a.name}</div>
             </div>
           ))}
@@ -152,10 +156,7 @@ function CardsTab({
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text">卡牌列表</h3>
-        <button
-          onClick={onNewCard}
-          className="btn-primary text-xs !py-1 !px-2"
-        >
+        <button onClick={onNewCard} className="btn-primary text-xs !py-1 !px-2">
           <Plus size={14} />
           新建
         </button>
@@ -177,7 +178,11 @@ function CardsTab({
             >
               <div className="w-12 aspect-[8/11] bg-gray-100 rounded-sm shrink-0 flex items-center justify-center text-text-secondary text-xs overflow-hidden">
                 {card.previewDataUrl ? (
-                  <img src={card.previewDataUrl} alt={card.name} className="w-full h-full object-cover" />
+                  <img
+                    src={card.previewDataUrl}
+                    alt={card.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <span className="text-[10px]">预览</span>
                 )}

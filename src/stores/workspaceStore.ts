@@ -1,5 +1,12 @@
 import { create } from 'zustand';
-import type { Project, ProjectWithCards, Card, Template, ResourceTab, EditorViewState } from '@/types';
+import type {
+  Project,
+  ProjectWithCards,
+  Card,
+  Template,
+  ResourceTab,
+  EditorViewState,
+} from '@/types';
 import { ProjectManager, CardManager, TemplateManager } from '@/db';
 
 interface WorkspaceState {
@@ -127,8 +134,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
 
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  setViewState: (state) =>
-    set((prev) => ({ viewState: { ...prev.viewState, ...state } })),
+  setViewState: (state) => set((prev) => ({ viewState: { ...prev.viewState, ...state } })),
 
   setSaveStatus: (status) => set({ saveStatus: status }),
 }));

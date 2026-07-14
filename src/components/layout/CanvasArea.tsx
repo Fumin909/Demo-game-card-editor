@@ -32,10 +32,7 @@ export function CanvasArea() {
   const scaledHeight = canvasSize.height * scale;
 
   return (
-    <div
-      className="flex-1 overflow-auto relative"
-      style={{ backgroundColor: WORKSPACE_BG }}
-    >
+    <div className="flex-1 overflow-auto relative" style={{ backgroundColor: WORKSPACE_BG }}>
       <div className="absolute inset-0 flex items-center justify-center p-8">
         <div
           className="shadow-2xl relative"

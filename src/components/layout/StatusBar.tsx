@@ -1,8 +1,7 @@
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 
 export function StatusBar() {
-  const { currentProject, currentCard, viewState, saveStatus } =
-    useWorkspaceStore();
+  const { currentProject, currentCard, viewState, saveStatus } = useWorkspaceStore();
 
   const objectCount = currentCard?.layers.length ?? 0;
   const zoomPercent = Math.round(viewState.zoom * 100);
