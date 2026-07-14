@@ -6,14 +6,18 @@ import type {
   Template,
   ResourceTab,
   EditorViewState,
+  Asset,
+  Layer,
 } from '@/types';
-import { ProjectManager, CardManager, TemplateManager } from '@/db';
+import { ProjectManager, CardManager, TemplateManager, AssetManager } from '@/db';
+import { generateId } from '@/lib/utils';
 
 interface WorkspaceState {
   projects: Project[];
   currentProject: ProjectWithCards | null;
   currentCard: Card | null;
   templates: Template[];
+  assets: Asset[];
   activeTab: ResourceTab;
   viewState: EditorViewState;
   isLoading: boolean;
@@ -32,9 +36,15 @@ interface WorkspaceActions {
   openCard: (id: string) => Promise<void>;
   closeCard: () => void;
   deleteCard: (id: string) => Promise<void>;
+  renameCard: (id: string, name: string) => Promise<void>;
   setActiveTab: (tab: ResourceTab) => void;
   setViewState: (state: Partial<EditorViewState>) => void;
   setSaveStatus: (status: 'saved' | 'saving' | 'unsaved') => void;
+  uploadAssets: (files: FileList | File[]) => Promise<Asset[]>;
+  renameAsset: (id: string, name: string) => Promise<void>;
+  deleteAsset: (id: string) => Promise<void>;
+  refreshProject: () => Promise<void>;
+  addImageLayer: (asset: Asset) => void;
 }
 
 let initPromise: Promise<void> | null = null;
@@ -44,6 +54,7 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
   currentProject: null,
   currentCard: null,
   templates: [],
+  assets: [],
   activeTab: 'cards',
   viewState: { zoom: 1, offsetX: 0, offsetY: 0 },
   isLoading: true,
@@ -81,19 +92,24 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
   openProject: async (id) => {
     const project = await ProjectManager.getById(id);
     if (project) {
-      set({ currentProject: project, currentCard: null, activeTab: 'cards' });
+      set({
+        currentProject: project,
+        currentCard: null,
+        assets: project.assets,
+        activeTab: 'cards',
+      });
     }
   },
 
   closeProject: () => {
-    set({ currentProject: null, currentCard: null });
+    set({ currentProject: null, currentCard: null, assets: [] });
   },
 
   deleteProject: async (id) => {
     await ProjectManager.delete(id);
     const { currentProject, loadProjects } = get();
     if (currentProject?.id === id) {
-      set({ currentProject: null, currentCard: null });
+      set({ currentProject: null, currentCard: null, assets: [] });
     }
     await loadProjects();
   },
@@ -106,14 +122,15 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
     const card = template
       ? await CardManager.createFromTemplate(currentProject.id, name, canvasSize, layers)
       : await CardManager.create(currentProject.id, name, canvasSize);
-    await get().openProject(currentProject.id);
+    await get().refreshProject();
+    await get().openCard(card.id);
     return card;
   },
 
   openCard: async (id) => {
     const card = await CardManager.getById(id);
     if (card) {
-      set({ currentCard: card });
+      set({ currentCard: card, viewState: { zoom: 1, offsetX: 0, offsetY: 0 } });
     }
   },
 
@@ -123,13 +140,20 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
 
   deleteCard: async (id) => {
     await CardManager.delete(id);
-    const { currentCard, currentProject, openProject } = get();
+    const { currentCard, refreshProject } = get();
     if (currentCard?.id === id) {
       set({ currentCard: null });
     }
-    if (currentProject) {
-      await openProject(currentProject.id);
+    await refreshProject();
+  },
+
+  renameCard: async (id, name) => {
+    await CardManager.update(id, { name });
+    const { currentCard, refreshProject } = get();
+    if (currentCard?.id === id) {
+      set({ currentCard: { ...currentCard, name } });
     }
+    await refreshProject();
   },
 
   setActiveTab: (tab) => set({ activeTab: tab }),
@@ -137,4 +161,63 @@ export const useWorkspaceStore = create<WorkspaceState & WorkspaceActions>((set,
   setViewState: (state) => set((prev) => ({ viewState: { ...prev.viewState, ...state } })),
 
   setSaveStatus: (status) => set({ saveStatus: status }),
+
+  uploadAssets: async (files) => {
+    const { currentProject } = get();
+    if (!currentProject) throw new Error('No project open');
+    const newAssets = await AssetManager.uploadFiles(currentProject.id, files);
+    set((s) => ({ assets: [...newAssets, ...s.assets] }));
+    await get().refreshProject();
+    return newAssets;
+  },
+
+  renameAsset: async (id, name) => {
+    await AssetManager.rename(id, name);
+    set((s) => ({
+      assets: s.assets.map((a) => (a.id === id ? { ...a, name } : a)),
+    }));
+  },
+
+  deleteAsset: async (id) => {
+    await AssetManager.delete(id);
+    set((s) => ({ assets: s.assets.filter((a) => a.id !== id) }));
+    await get().refreshProject();
+  },
+
+  refreshProject: async () => {
+    const { currentProject } = get();
+    if (currentProject) {
+      const project = await ProjectManager.getById(currentProject.id);
+      if (project) {
+        set({ currentProject: project, assets: project.assets });
+      }
+    }
+  },
+
+  addImageLayer: (asset) => {
+    const { currentCard } = get();
+    if (!currentCard) return;
+    const newLayer: Layer = {
+      id: generateId(),
+      type: 'image',
+      name: asset.name,
+      x: (currentCard.canvasSize.width - asset.width * 0.5) / 2,
+      y: (currentCard.canvasSize.height - asset.height * 0.5) / 2,
+      width: Math.min(asset.width, currentCard.canvasSize.width * 0.6),
+      height: Math.min(asset.height, currentCard.canvasSize.height * 0.4),
+      rotation: 0,
+      opacity: 1,
+      visible: true,
+      locked: false,
+      zIndex: currentCard.layers.reduce((m, l) => Math.max(m, l.zIndex), 0) + 10,
+      assetId: asset.id,
+    };
+    set({
+      currentCard: {
+        ...currentCard,
+        layers: [...currentCard.layers, newLayer],
+      },
+      saveStatus: 'unsaved',
+    });
+  },
 }));
