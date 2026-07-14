@@ -353,14 +353,23 @@ function AssetsTab() {
               className="border border-border rounded-md p-1 hover:border-primary/50 transition-colors group relative"
             >
               <div
-                className="aspect-square bg-gray-50 rounded-sm overflow-hidden cursor-pointer"
+                className="aspect-square bg-gray-50 rounded-sm overflow-hidden cursor-grab active:cursor-grabbing"
                 onClick={() => handleAssetClick(a.id)}
-                title={currentCard ? '点击添加到画布' : '请先打开一张卡牌'}
+                draggable={!!currentCard}
+                onDragStart={(e) => {
+                  if (!currentCard) {
+                    e.preventDefault();
+                    return;
+                  }
+                  e.dataTransfer.setData('application/x-asset-id', a.id);
+                  e.dataTransfer.effectAllowed = 'copy';
+                }}
+                title={currentCard ? '点击添加到画布，或拖拽到画布指定位置' : '请先打开一张卡牌'}
               >
                 <img
                   src={a.thumbnailDataUrl}
                   alt={a.name}
-                  className="w-full h-full object-cover hover:opacity-90 transition-opacity"
+                  className="w-full h-full object-cover hover:opacity-90 transition-opacity pointer-events-none"
                 />
               </div>
               {renamingId === a.id ? (

@@ -7,9 +7,10 @@ export function StatusBar() {
 
   const objectCount = currentCard?.layers.length ?? 0;
   const zoomPercent = Math.round(viewState.zoom * 100);
-  const selectedLayer = selectedLayerId
-    ? currentCard?.layers.find((l) => l.id === selectedLayerId)
-    : null;
+  const selectedLayer =
+    currentCard && selectedLayerId
+      ? currentCard.layers.find((l) => l.id === selectedLayerId)
+      : undefined;
 
   const statusText = {
     saved: '已保存',
@@ -17,22 +18,54 @@ export function StatusBar() {
     unsaved: '未保存',
   }[saveStatus];
 
+  const typeLabel =
+    selectedLayer?.type === 'image' ? '图片' : selectedLayer?.type === 'text' ? '文字' : '';
+
   return (
-    <div className="h-8 bg-white border-t border-border flex items-center px-4 text-xs text-text-secondary shrink-0 select-none">
-      <div className="flex items-center gap-4">
-        <span>项目: {currentProject?.name ?? '-'}</span>
-        <span>卡牌: {currentCard?.name ?? '-'}</span>
-        <span>缩放: {currentCard ? `${zoomPercent}%` : '-'}</span>
-        <span>对象: {currentCard ? `${objectCount}` : '-'}</span>
-        {selectedLayer && (
-          <span className="text-primary">
-            选中: {selectedLayer.name} ({Math.round(selectedLayer.x)}, {Math.round(selectedLayer.y)}
-            ) {Math.round(selectedLayer.width)}×{Math.round(selectedLayer.height)}
+    <div className="h-7 bg-white border-t border-border flex items-center px-3 text-[11px] text-text-secondary shrink-0 select-none gap-4">
+      <span>{currentProject?.name ?? '无项目'}</span>
+      <span className="text-border">|</span>
+      <span>{currentCard?.name ?? '无卡牌'}</span>
+      {currentCard && (
+        <>
+          <span className="text-border">|</span>
+          <span>
+            {currentCard.canvasSize.width}×{currentCard.canvasSize.height}
           </span>
-        )}
-      </div>
+          <span className="text-border">|</span>
+          <span>{zoomPercent}%</span>
+          <span className="text-border">|</span>
+          <span>{objectCount} 个对象</span>
+        </>
+      )}
+      {selectedLayer && (
+        <>
+          <span className="text-border">|</span>
+          <span className="text-primary">
+            {typeLabel}: {selectedLayer.name}
+          </span>
+          <span className="text-text-secondary/60">
+            ({Math.round(selectedLayer.x)}, {Math.round(selectedLayer.y)}){' '}
+            {Math.round(selectedLayer.width)}×{Math.round(selectedLayer.height)}
+            {selectedLayer.rotation !== 0 && ` · ${Math.round(selectedLayer.rotation)}°`}
+            {selectedLayer.opacity !== 1 && ` · ${Math.round(selectedLayer.opacity * 100)}%`}
+            {selectedLayer.locked && ' · 🔒'}
+            {!selectedLayer.visible && ' · 👁'}
+          </span>
+        </>
+      )}
       <div className="flex-1" />
-      <span className={saveStatus === 'unsaved' ? 'text-orange-500' : ''}>{statusText}</span>
+      <span
+        className={
+          saveStatus === 'unsaved'
+            ? 'text-orange-500'
+            : saveStatus === 'saving'
+              ? 'text-blue-500'
+              : 'text-green-500'
+        }
+      >
+        {statusText}
+      </span>
     </div>
   );
 }

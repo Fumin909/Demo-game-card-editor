@@ -92,7 +92,11 @@ export function TopBar() {
         >
           <ZoomIn size={18} />
         </button>
-        <button className="btn-icon" title="适应窗口">
+        <button
+          className="btn-icon"
+          title="适应窗口"
+          onClick={() => (window as any).__canvasFitWindow?.()}
+        >
           <Maximize2 size={18} />
         </button>
       </div>

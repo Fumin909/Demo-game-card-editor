@@ -17,7 +17,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
-import type { Layer, TextLayer } from '@/types';
+import type { Layer, TextLayer, ImageLayer as ImageLayerType } from '@/types';
 
 export function RightPanel() {
   const { currentCard } = useWorkspaceStore();
@@ -222,8 +222,8 @@ function ObjectListPanel({ layers, selectedId }: { layers: Layer[]; selectedId: 
 }
 
 function PropertyPanel({ layer }: { layer: Layer | undefined }) {
-  const { currentCard, viewState } = useWorkspaceStore();
-  const { updateLayer } = useEditorStore();
+  const { currentCard, viewState, assets } = useWorkspaceStore();
+  const { updateLayer, updateImageLayer } = useEditorStore();
 
   if (!currentCard) return null;
 
@@ -234,17 +234,28 @@ function PropertyPanel({ layer }: { layer: Layer | undefined }) {
           <h3 className="text-sm font-semibold text-text">属性</h3>
         </div>
         <div className="p-3 space-y-3">
-          <div className="text-sm text-text-secondary mb-2">画布属性</div>
+          <div className="text-xs text-text-secondary mb-2">画布属性</div>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <PropField label="宽度" value={String(currentCard.canvasSize.width)} readOnly />
             <PropField label="高度" value={String(currentCard.canvasSize.height)} readOnly />
             <PropField label="缩放" value={`${Math.round(viewState.zoom * 100)}%`} readOnly />
             <PropField label="对象数" value={String(currentCard.layers.length)} readOnly />
           </div>
+          <div className="text-[11px] text-text-secondary border-t border-border pt-2 space-y-1">
+            <div>快捷键：</div>
+            <div>· 双击文字：原位编辑</div>
+            <div>· Ctrl+滚轮：缩放画布</div>
+            <div>· 空格+拖拽：平移画布</div>
+            <div>· Delete：删除选中对象</div>
+            <div>· Ctrl+S：保存</div>
+          </div>
         </div>
       </div>
     );
   }
+
+  const imgLayer = layer.type === 'image' ? (layer as ImageLayerType) : null;
+  const currentAsset = imgLayer ? assets.find((a) => a.id === imgLayer.assetId) : null;
 
   return (
     <div className="flex-1 overflow-auto">
@@ -254,6 +265,43 @@ function PropertyPanel({ layer }: { layer: Layer | undefined }) {
         </h3>
       </div>
       <div className="p-3 space-y-3">
+        {imgLayer && (
+          <>
+            <div>
+              <div className="text-xs text-text-secondary mb-1">图片预览</div>
+              <div
+                className="border border-border rounded p-1 bg-gray-50 flex items-center justify-center"
+                style={{ height: 80 }}
+              >
+                {currentAsset ? (
+                  <img
+                    src={currentAsset.thumbnailDataUrl}
+                    alt={currentAsset.name}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                ) : (
+                  <span className="text-xs text-text-secondary">图片未找到</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-text-secondary block mb-1">替换图片</label>
+              <select
+                value={imgLayer.assetId}
+                onChange={(e) => updateImageLayer(layer.id, { assetId: e.target.value })}
+                className="w-full text-xs border border-border rounded px-2 py-1 focus:outline-none focus:border-primary"
+              >
+                {assets.length === 0 && <option value="">暂无素材，请先上传</option>}
+                {assets.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </>
+        )}
+
         <div className="text-xs text-text-secondary mb-1">位置与尺寸</div>
         <div className="grid grid-cols-2 gap-2 text-sm">
           <PropField
